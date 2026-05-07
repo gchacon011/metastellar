@@ -39,6 +39,36 @@ As a result, potentially millions of Web3 users remain disconnected from the Ste
 
 MetaStellar solves this problem by creating a secure interoperability layer that allows MetaMask users to seamlessly interact with Soroban applications using familiar wallet behaviors and Web3-native UX patterns. By bridging Ethereum-style wallet interactions into Soroban-compatible actions, MetaStellar dramatically lowers adoption friction and accelerates cross-chain accessibility for both users and developers.
 
+## Solution Overview
+
+MetaStellar is building a secure interoperability and onboarding layer that enables MetaMask users to seamlessly interact with Soroban applications on Stellar without requiring a new wallet or unfamiliar onboarding process.
+
+At its core, MetaStellar acts as a wallet compatibility bridge between Ethereum-native user experiences and Soroban-compatible blockchain interactions.
+
+The platform introduces a Solflare-style adapter architecture that:
+
+- Connects MetaMask directly to Soroban applications
+- Translates Ethereum-style transaction and signing flows into Soroban-compatible actions
+- Enables secure wallet interoperability across ecosystems
+- Preserves familiar Web3 UX patterns for existing MetaMask users
+- Simplifies cross-chain onboarding for both users and developers
+
+MetaStellar is designed to support critical functionality including:
+
+- Wallet connection and authentication
+- Address mapping and identity translation
+- Network switching
+- Message signing
+- Transaction conversion and execution
+- Cross-chain interaction handling
+- Developer-friendly integration tooling
+
+Instead of forcing users to abandon their existing Web3 workflow, MetaStellar allows them to access Stellar and Soroban applications using the wallet experience they already know and trust.
+
+For developers, MetaStellar provides an onboarding infrastructure layer that dramatically lowers friction for user acquisition by making Soroban dApps immediately accessible to millions of existing MetaMask users.
+
+Ultimately, MetaStellar helps transform Soroban adoption from a fragmented multi-wallet experience into a seamless, interoperable Web3 journey.
+
 ## Target Audience
 
 ### Primary Audience - EVM-Native Web3 Users
