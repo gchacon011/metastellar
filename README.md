@@ -39,6 +39,70 @@ As a result, potentially millions of Web3 users remain disconnected from the Ste
 
 MetaStellar solves this problem by creating a secure interoperability layer that allows MetaMask users to seamlessly interact with Soroban applications using familiar wallet behaviors and Web3-native UX patterns. By bridging Ethereum-style wallet interactions into Soroban-compatible actions, MetaStellar dramatically lowers adoption friction and accelerates cross-chain accessibility for both users and developers.
 
+## Target Audience
+
+### Primary Audience - EVM-Native Web3 Users
+
+MetaStellar is primarily designed for existing Web3 users who already operate within the Ethereum ecosystem and use wallets such as MetaMask as their main gateway to decentralized applications.
+
+This includes:
+
+- DeFi users
+- NFT collectors and traders
+- Web3 gamers
+- DAO participants
+- Crypto-native investors
+- Multi-chain explorers
+- Developers already familiar with EVM tooling
+
+These users are highly active in Web3 but often avoid exploring new ecosystems due to onboarding friction, wallet fragmentation, and unfamiliar UX patterns.
+
+### Secondary Audience - Soroban & Stellar Developers
+
+Developers building on Soroban within the Stellar ecosystem represent a critical secondary audience.
+
+MetaStellar helps them:
+
+- Access a significantly larger wallet user base
+- Reduce onboarding abandonment
+- Increase dApp adoption
+- Simplify wallet integration flows
+- Deliver familiar Web3 UX expectations
+- Accelerate ecosystem growth
+
+For developers, MetaStellar acts as an onboarding and interoperability layer that removes one of the biggest barriers to user acquisition.
+
+### Tertiary Audience - Blockchain Ecosystems & Infrastructure Partners
+
+MetaStellar also serves:
+
+- Blockchain foundations
+- Web3 incubators
+- Hackathon ecosystems
+- Cross-chain infrastructure providers
+- Wallet providers
+- Enterprise blockchain adoption initiatives
+
+These organizations benefit from:
+
+- Increased cross-chain interoperability
+- Faster user onboarding
+- Improved ecosystem accessibility
+- Higher user retention
+- Expanded developer participation
+
+### Ideal User Persona
+
+> "A Web3-native user with an existing MetaMask wallet who wants to explore new blockchain ecosystems like Soroban without learning new wallet systems or changing their existing Web3 workflow."
+
+MetaStellar transforms Stellar adoption from:
+
+> "Install a new wallet and learn a new system"
+
+into:
+
+> "Connect with the wallet you already trust."
+
 ## Features
 
 - Connects to MetaMask through `window.ethereum` or an injected EIP-1193 provider.
