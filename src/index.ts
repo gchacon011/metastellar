@@ -2,6 +2,7 @@ export { DeterministicAddressResolver, StaticAddressResolver, normalizeEvmAddres
 export { StellarMetaMaskConnectorError } from "./errors.js";
 export { buildMessageToSign, buildPaymentTypedData, buildSorobanInvocationTypedData } from "./eip712.js";
 export { DEFAULT_NETWORKS, STELLAR_PUBLIC, STELLAR_TESTNET, normalizeChainId } from "./networks.js";
+export { MetaStellarAdapter } from "./adapter.js";
 export { StellarMetaMaskConnector } from "./connector.js";
 export { evmSignatureToSorobanScVals, splitEvmSignature } from "./stellarScVal.js";
 export { DEFAULT_STELLAR_SNAP_ID, StellarSnapClient, callMetaStellar } from "./snapClient.js";
@@ -13,7 +14,12 @@ export type {
   Eip712TypedData,
   EthereumProvider,
   Hex,
+  MetaStellarAdapterMode,
+  MetaStellarAdapterOptions,
+  MetaStellarAdapterState,
+  MetaStellarReadyState,
   MetaStellarSnapMethod,
+  SignTransactionOptions,
   SignatureRequest,
   SignedMessage,
   SignedSorobanInvocation,

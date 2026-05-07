@@ -49,6 +49,18 @@ export class StellarSnapClient {
     return this.invoke("getBalance", params);
   }
 
+  getAccountInfo(address: string, params: StellarSnapRequestParams = {}): Promise<unknown> {
+    return this.invoke("getAccountInfo", { ...params, address });
+  }
+
+  transfer(to: string, amount: string, params: StellarSnapRequestParams = {}): Promise<unknown> {
+    return this.invoke("transfer", { ...params, to, amount });
+  }
+
+  fund(params: StellarSnapRequestParams = {}): Promise<unknown> {
+    return this.invoke("fund", params);
+  }
+
   signTransaction(transaction: string, params: StellarSnapRequestParams = {}): Promise<string> {
     return this.invoke("signTransaction", { ...params, transaction });
   }
@@ -59,6 +71,14 @@ export class StellarSnapClient {
 
   signStr(message: string, params: StellarSnapRequestParams = {}): Promise<string> {
     return this.invoke("signStr", { ...params, message });
+  }
+
+  listAccounts(params?: StellarSnapRequestParams): Promise<unknown> {
+    return this.invoke("listAccounts", params);
+  }
+
+  getAssets(params?: StellarSnapRequestParams): Promise<unknown> {
+    return this.invoke("getAssets", params);
   }
 
   private async assertFlaskIfRequired(): Promise<void> {

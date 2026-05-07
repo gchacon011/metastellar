@@ -38,6 +38,28 @@ export interface StellarSnapRequestParams {
   [key: string]: unknown;
 }
 
+export type MetaStellarAdapterMode = "snap" | "intent";
+
+export type MetaStellarReadyState = "not_detected" | "installed" | "loadable";
+
+export interface MetaStellarAdapterOptions extends ConnectorOptions {
+  mode?: MetaStellarAdapterMode;
+  snap?: SnapClientOptions;
+}
+
+export interface MetaStellarAdapterState {
+  connected: boolean;
+  connecting: boolean;
+  readyState: MetaStellarReadyState;
+  mode: MetaStellarAdapterMode;
+  account?: ConnectedAccount;
+}
+
+export interface SignTransactionOptions {
+  testnet?: boolean;
+  submit?: boolean;
+}
+
 export interface StellarNetworkConfig {
   id: string;
   name: string;

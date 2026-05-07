@@ -242,7 +242,9 @@ Send `signedInvocation` to your Soroban account contract, relayer, or dApp backe
 
 ## StellarSnap Alignment
 
-MetaStellar is aligned with the StellarSnap model for MetaMask Snap-based Stellar wallet access. StellarSnap exposes Stellar wallet functionality through MetaMask using:
+MetaStellar is aligned with the earlier Stellar-MetaMask SCF effort and the StellarSnap model for MetaMask Snap-based Stellar wallet access. The SCF project positioned the work as a Stellar integration on MetaMask using the MetaMask Snaps platform, and StellarSnap provides a practical implementation pattern for invoking Stellar wallet functionality through MetaMask.
+
+StellarSnap exposes Stellar wallet functionality through MetaMask using:
 
 - `wallet_requestSnaps` to install or connect the Snap
 - `wallet_invokeSnap` to invoke Stellar methods
@@ -292,6 +294,39 @@ Supported Snap-style methods:
 - `getAssets`
 - `sendAuthRequest`
 - `signStr`
+
+## Solflare-Style Adapter
+
+For dApps that want a wallet-adapter style integration surface, use `MetaStellarAdapter`. It wraps the lower-level connector and Snap client behind a familiar interface with connection state, event listeners, network switching, message signing, transaction signing, and Soroban intent signing.
+
+MetaStellar supports two adapter modes:
+
+- `intent`: MetaMask signs EIP-712 or `personal_sign` payloads that a Soroban account contract, dApp backend, or relayer verifies.
+- `snap`: MetaStellar connects to a Stellar Snap and invokes Stellar wallet methods through `wallet_invokeSnap`.
+
+```ts
+import { MetaStellarAdapter, STELLAR_TESTNET } from "@local/metastellar";
+
+const adapter = new MetaStellarAdapter({
+  appName: "Soroban dApp",
+  mode: "snap",
+  networks: [STELLAR_TESTNET],
+  defaultNetworkId: "testnet"
+});
+
+adapter.on("connect", (account) => {
+  console.log("Connected", account);
+});
+
+await adapter.connect();
+await adapter.switchNetwork("testnet");
+
+const address = await adapter.getAddress();
+const signedXdr = await adapter.signTransaction(transactionXdr);
+const signedMessage = await adapter.signStr("Sign in to Soroban dApp");
+```
+
+This keeps dApp code close to the wallet-adapter ergonomics developers expect from ecosystems like Solana, while preserving Stellar-specific capabilities such as network passphrases, Soroban invocation intents, Stellar XDR signing, and optional Snap execution.
 
 ## Address Mapping
 

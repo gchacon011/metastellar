@@ -8,6 +8,7 @@ test("package exposes expected connector files", async () => {
   assert.match(index, /StaticAddressResolver/);
   assert.match(index, /evmSignatureToSorobanScVals/);
   assert.match(index, /StellarSnapClient/);
+  assert.match(index, /MetaStellarAdapter/);
 });
 
 test("typed data builders include Stellar network passphrase", async () => {
@@ -23,4 +24,13 @@ test("snap client aligns with StellarSnap request methods", async () => {
   assert.match(source, /wallet_invokeSnap/);
   assert.match(source, /npm:stellar-snap/);
   assert.match(source, /signAndSubmitTransaction/);
+});
+
+test("adapter exposes Solflare-style wallet surface", async () => {
+  const source = await readFile(new URL("../src/adapter.ts", import.meta.url), "utf8");
+  assert.match(source, /connect/);
+  assert.match(source, /disconnect/);
+  assert.match(source, /switchNetwork/);
+  assert.match(source, /signTransaction/);
+  assert.match(source, /signSorobanInvocation/);
 });
