@@ -240,6 +240,12 @@ const signedInvocation = await connector.signSorobanInvocation({
 
 Send `signedInvocation` to your Soroban account contract, relayer, or dApp backend. The verifier should recover the EVM signer from the EIP-712 payload and compare it with the mapped EVM address for the Stellar account or contract address.
 
+More examples:
+
+- [Intent mode example](examples/intent-mode.ts)
+- [Snap mode example](examples/snap-mode.ts)
+- [Architecture notes](docs/ARCHITECTURE.md)
+
 ## StellarSnap Alignment
 
 MetaStellar is aligned with the earlier Stellar-MetaMask SCF effort and the StellarSnap model for MetaMask Snap-based Stellar wallet access. The SCF project positioned the work as a Stellar integration on MetaMask using the MetaMask Snaps platform, and StellarSnap provides a practical implementation pattern for invoking Stellar wallet functionality through MetaMask.
