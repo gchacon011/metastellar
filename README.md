@@ -69,6 +69,62 @@ For developers, MetaStellar provides an onboarding infrastructure layer that dra
 
 Ultimately, MetaStellar helps transform Soroban adoption from a fragmented multi-wallet experience into a seamless, interoperable Web3 journey.
 
+## Unique Value Proposition
+
+MetaStellar uniquely positions itself as the interoperability layer that connects the massive Ethereum wallet ecosystem with the growing Soroban ecosystem on Stellar.
+
+Unlike traditional wallet integrations that require users to install new wallets, learn new transaction flows, or completely change ecosystems, MetaStellar allows users to access Soroban applications directly through MetaMask using a familiar Web3 experience.
+
+Our core value proposition is simple:
+
+> "Bring users to Stellar without forcing them to leave the wallets they already trust."
+
+MetaStellar delivers unique value through four key differentiators:
+
+### 1. Frictionless Web3 Onboarding
+
+MetaStellar removes one of the largest barriers in blockchain adoption: wallet fragmentation. Users can immediately interact with Soroban applications without creating new accounts, installing additional wallets, or learning unfamiliar UX patterns.
+
+### 2. EVM-to-Soroban Compatibility Layer
+
+We translate Ethereum-native transaction flows, signing methods, and wallet interactions into Soroban-compatible actions, enabling seamless interoperability between two major blockchain ecosystems.
+
+### 3. Massive User Accessibility Expansion
+
+By enabling compatibility with MetaMask, MetaStellar opens the door for Soroban developers to potentially reach millions of existing Web3 users already active in DeFi, NFTs, DAOs, and multi-chain ecosystems.
+
+### 4. Developer Growth Infrastructure
+
+MetaStellar is not only a user tool. It is onboarding infrastructure for the Stellar ecosystem. Developers gain:
+
+- Faster user acquisition
+- Reduced onboarding abandonment
+- Familiar wallet UX for users
+- Easier dApp adoption
+- Cross-chain accessibility without rebuilding wallet systems
+
+## Strategic Advantage
+
+Most blockchain ecosystems compete for users by asking them to:
+
+- Install another wallet
+- Learn another interface
+- Adopt another workflow
+
+MetaStellar changes the model entirely.
+
+Instead of forcing migration, we enable interoperability.
+
+That shift transforms Stellar adoption from:
+
+> "Convince users to switch ecosystems"
+
+to:
+
+> "Allow users to explore Stellar instantly with the tools they already use."
+
+This creates a significantly more scalable pathway for Soroban ecosystem growth.
+
 ## Target Audience
 
 ### Primary Audience - EVM-Native Web3 Users
