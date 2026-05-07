@@ -7,6 +7,37 @@ export interface EthereumProvider {
   removeListener?(event: string, listener: (...args: unknown[]) => void): void;
 }
 
+export type MetaStellarSnapMethod =
+  | "connect"
+  | "getAddress"
+  | "getAccountInfo"
+  | "getBalance"
+  | "transfer"
+  | "fund"
+  | "signTransaction"
+  | "signAndSubmitTransaction"
+  | "getDataPacket"
+  | "setCurrentAccount"
+  | "showAddress"
+  | "createAccount"
+  | "listAccounts"
+  | "renameAccount"
+  | "importAccount"
+  | "getAssets"
+  | "sendAuthRequest"
+  | "signStr";
+
+export interface SnapClientOptions {
+  provider?: EthereumProvider;
+  snapId?: string;
+  requireFlask?: boolean;
+}
+
+export interface StellarSnapRequestParams {
+  testnet?: boolean;
+  [key: string]: unknown;
+}
+
 export interface StellarNetworkConfig {
   id: string;
   name: string;

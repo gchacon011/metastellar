@@ -4,6 +4,7 @@ export { buildMessageToSign, buildPaymentTypedData, buildSorobanInvocationTypedD
 export { DEFAULT_NETWORKS, STELLAR_PUBLIC, STELLAR_TESTNET, normalizeChainId } from "./networks.js";
 export { StellarMetaMaskConnector } from "./connector.js";
 export { evmSignatureToSorobanScVals, splitEvmSignature } from "./stellarScVal.js";
+export { DEFAULT_STELLAR_SNAP_ID, StellarSnapClient, callMetaStellar } from "./snapClient.js";
 export type {
   AddressMapping,
   AddressResolver,
@@ -12,11 +13,14 @@ export type {
   Eip712TypedData,
   EthereumProvider,
   Hex,
+  MetaStellarSnapMethod,
   SignatureRequest,
   SignedMessage,
   SignedSorobanInvocation,
   SignedStellarPayment,
+  SnapClientOptions,
   SorobanInvocationIntent,
   StellarNetworkConfig,
+  StellarSnapRequestParams,
   StellarPaymentIntent
 } from "./types.js";

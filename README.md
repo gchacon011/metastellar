@@ -240,6 +240,59 @@ const signedInvocation = await connector.signSorobanInvocation({
 
 Send `signedInvocation` to your Soroban account contract, relayer, or dApp backend. The verifier should recover the EVM signer from the EIP-712 payload and compare it with the mapped EVM address for the Stellar account or contract address.
 
+## StellarSnap Alignment
+
+MetaStellar is aligned with the StellarSnap model for MetaMask Snap-based Stellar wallet access. StellarSnap exposes Stellar wallet functionality through MetaMask using:
+
+- `wallet_requestSnaps` to install or connect the Snap
+- `wallet_invokeSnap` to invoke Stellar methods
+- `npm:stellar-snap` as the default Snap package ID
+- Per-call `testnet` flags for mainnet/testnet behavior
+- Stellar methods such as `getAddress`, `getBalance`, `transfer`, `signTransaction`, `signAndSubmitTransaction`, and `signStr`
+
+MetaStellar keeps this Snap-compatible path separate from its EIP-712 Soroban intent path. Use `StellarSnapClient` when you want to invoke an installed Stellar Snap wallet directly. Use `StellarMetaMaskConnector` when you want MetaMask to sign Ethereum-style intents that your Soroban account contract, dApp backend, or relayer verifies.
+
+```ts
+import { StellarSnapClient, callMetaStellar } from "@local/metastellar";
+
+const snap = new StellarSnapClient({
+  snapId: "npm:stellar-snap",
+  requireFlask: false
+});
+
+await snap.connect();
+
+const address = await snap.getAddress({ testnet: true });
+const balance = await snap.getBalance({ address, testnet: true });
+const signedXdr = await snap.signTransaction(transactionXdr, { testnet: true });
+
+const submitted = await callMetaStellar("signAndSubmitTransaction", {
+  transaction: transactionXdr,
+  testnet: true
+});
+```
+
+Supported Snap-style methods:
+
+- `connect`
+- `getAddress`
+- `getAccountInfo`
+- `getBalance`
+- `transfer`
+- `fund`
+- `signTransaction`
+- `signAndSubmitTransaction`
+- `getDataPacket`
+- `setCurrentAccount`
+- `showAddress`
+- `createAccount`
+- `listAccounts`
+- `renameAccount`
+- `importAccount`
+- `getAssets`
+- `sendAuthRequest`
+- `signStr`
+
 ## Address Mapping
 
 The default `DeterministicAddressResolver` creates an off-chain identity hash from:
