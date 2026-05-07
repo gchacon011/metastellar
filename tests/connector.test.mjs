@@ -9,6 +9,8 @@ test("package exposes expected connector files", async () => {
   assert.match(index, /evmSignatureToSorobanScVals/);
   assert.match(index, /StellarSnapClient/);
   assert.match(index, /MetaStellarAdapter/);
+  assert.match(index, /requestProvider/);
+  assert.match(index, /assertStellarAddress/);
 });
 
 test("typed data builders include Stellar network passphrase", async () => {
@@ -33,4 +35,13 @@ test("adapter exposes Solflare-style wallet surface", async () => {
   assert.match(source, /switchNetwork/);
   assert.match(source, /signTransaction/);
   assert.match(source, /signSorobanInvocation/);
+});
+
+test("provider and validation utilities cover production hardening", async () => {
+  const provider = await readFile(new URL("../src/provider.ts", import.meta.url), "utf8");
+  const validation = await readFile(new URL("../src/validation.ts", import.meta.url), "utf8");
+  assert.match(provider, /USER_REJECTED/);
+  assert.match(provider, /PROVIDER_TIMEOUT/);
+  assert.match(validation, /INVALID_STELLAR_ADDRESS/);
+  assert.match(validation, /INVALID_XDR/);
 });

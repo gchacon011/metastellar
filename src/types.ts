@@ -31,6 +31,7 @@ export interface SnapClientOptions {
   provider?: EthereumProvider;
   snapId?: string;
   requireFlask?: boolean;
+  requestTimeoutMs?: number;
 }
 
 export interface StellarSnapRequestParams {
@@ -98,6 +99,8 @@ export interface ConnectorOptions {
   addressResolver?: AddressResolver;
   nonceProvider?: () => Promise<string> | string;
   now?: () => Date;
+  requestTimeoutMs?: number;
+  allowTypedDataFallback?: boolean;
 }
 
 export interface SignatureRequest {

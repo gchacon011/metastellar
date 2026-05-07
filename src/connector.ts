@@ -1,7 +1,9 @@
 import { DeterministicAddressResolver, normalizeEvmAddress, randomNonce } from "./addressMapping.js";
-import { StellarMetaMaskConnectorError, invariant } from "./errors.js";
+import { invariant } from "./errors.js";
 import { buildMessageToSign, buildPaymentTypedData, buildSorobanInvocationTypedData } from "./eip712.js";
 import { DEFAULT_NETWORKS, normalizeChainId } from "./networks.js";
+import { getInjectedMetaMaskProvider, requestProvider } from "./provider.js";
+import { assertContractId, assertNonEmptyString, assertPositiveAmount, assertStellarAddress } from "./validation.js";
 import type {
   AddressMapping,
   AddressResolver,
@@ -26,6 +28,8 @@ export class StellarMetaMaskConnector {
   private readonly addressResolver: AddressResolver;
   private readonly nonceProvider: () => Promise<string> | string;
   private readonly now: () => Date;
+  private readonly requestTimeoutMs?: number;
+  private readonly allowTypedDataFallback: boolean;
   private activeNetwork: StellarNetworkConfig;
   private evmAddress?: Hex;
   private evmChainId?: Hex;
@@ -42,6 +46,8 @@ export class StellarMetaMaskConnector {
     this.addressResolver = options.addressResolver ?? new DeterministicAddressResolver();
     this.nonceProvider = options.nonceProvider ?? randomNonce;
     this.now = options.now ?? (() => new Date());
+    this.requestTimeoutMs = options.requestTimeoutMs;
+    this.allowTypedDataFallback = options.allowTypedDataFallback ?? true;
   }
 
   get network(): StellarNetworkConfig {
@@ -59,10 +65,16 @@ export class StellarMetaMaskConnector {
   }
 
   async connect(): Promise<ConnectedAccount> {
-    const accounts = await this.provider.request<string[]>({ method: "eth_requestAccounts" });
+    const accounts = await requestProvider<string[]>(
+      this.provider,
+      { method: "eth_requestAccounts" },
+      this.providerRequestOptions()
+    );
     invariant(accounts.length > 0 && accounts[0], "MetaMask returned no accounts", "NO_ACCOUNTS");
     this.evmAddress = normalizeEvmAddress(accounts[0]);
-    this.evmChainId = normalizeChainId(await this.provider.request<string>({ method: "eth_chainId" }));
+    this.evmChainId = normalizeChainId(
+      await requestProvider<string>(this.provider, { method: "eth_chainId" }, this.providerRequestOptions())
+    );
     this.stellarMapping = await this.addressResolver.resolve(this.evmAddress, this.activeNetwork);
     return this.requireAccount();
   }
@@ -73,17 +85,54 @@ export class StellarMetaMaskConnector {
     this.stellarMapping = undefined;
   }
 
+  async refresh(): Promise<ConnectedAccount | undefined> {
+    const accounts = await requestProvider<string[]>(
+      this.provider,
+      { method: "eth_accounts" },
+      this.providerRequestOptions()
+    );
+
+    if (!accounts[0]) {
+      await this.disconnect();
+      return undefined;
+    }
+
+    return this.applyEvmAccount(accounts[0]);
+  }
+
+  async handleAccountsChanged(accounts: string[]): Promise<ConnectedAccount | undefined> {
+    if (!accounts[0]) {
+      await this.disconnect();
+      return undefined;
+    }
+
+    return this.applyEvmAccount(accounts[0]);
+  }
+
+  async handleChainChanged(chainId: string): Promise<ConnectedAccount | undefined> {
+    this.evmChainId = normalizeChainId(chainId);
+    if (!this.evmAddress) return undefined;
+    this.stellarMapping = await this.addressResolver.resolve(this.evmAddress, this.activeNetwork);
+    return this.requireAccount();
+  }
+
   async switchStellarNetwork(networkId: string, options: { switchEvmChain?: boolean } = {}): Promise<ConnectedAccount> {
     const next = this.networks.find((network) => network.id === networkId);
     invariant(next, `Unknown Stellar network: ${networkId}`, "UNKNOWN_NETWORK");
     this.activeNetwork = next;
 
     if (options.switchEvmChain && next.expectedEvmChainId) {
-      await this.provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: next.expectedEvmChainId }]
-      });
-      this.evmChainId = normalizeChainId(await this.provider.request<string>({ method: "eth_chainId" }));
+      await requestProvider(
+        this.provider,
+        {
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: next.expectedEvmChainId }]
+        },
+        this.providerRequestOptions()
+      );
+      this.evmChainId = normalizeChainId(
+        await requestProvider<string>(this.provider, { method: "eth_chainId" }, this.providerRequestOptions())
+      );
     }
 
     if (!this.evmAddress) {
@@ -101,13 +150,18 @@ export class StellarMetaMaskConnector {
   }
 
   async signMessage(request: SignatureRequest): Promise<SignedMessage> {
+    assertNonEmptyString(request.statement, "statement");
     const account = await this.ensureConnected();
     const issuedAt = request.issuedAt ?? this.now().toISOString();
     const message = buildMessageToSign({ ...request, issuedAt }, this.activeNetwork);
-    const signature = await this.provider.request<Hex>({
-      method: "personal_sign",
-      params: [message, account.evmAddress]
-    });
+    const signature = await requestProvider<Hex>(
+      this.provider,
+      {
+        method: "personal_sign",
+        params: [message, account.evmAddress]
+      },
+      this.providerRequestOptions()
+    );
 
     return {
       evmAddress: account.evmAddress,
@@ -120,6 +174,9 @@ export class StellarMetaMaskConnector {
   }
 
   async signSorobanInvocation(intent: SorobanInvocationIntent): Promise<SignedSorobanInvocation> {
+    assertContractId(intent.contractId);
+    assertNonEmptyString(intent.functionName, "functionName");
+    if (intent.sourceAccount) assertStellarAddress(intent.sourceAccount, "sourceAccount");
     const account = await this.ensureConnected();
     const nonce = await this.nonceProvider();
     const issuedAt = this.now().toISOString();
@@ -151,6 +208,9 @@ export class StellarMetaMaskConnector {
   }
 
   async signPayment(intent: StellarPaymentIntent): Promise<SignedStellarPayment> {
+    assertStellarAddress(intent.destination, "destination");
+    if (intent.sourceAccount) assertStellarAddress(intent.sourceAccount, "sourceAccount");
+    assertPositiveAmount(intent.amount);
     const account = await this.ensureConnected();
     const nonce = await this.nonceProvider();
     const issuedAt = this.now().toISOString();
@@ -195,33 +255,47 @@ export class StellarMetaMaskConnector {
     };
   }
 
+  private async applyEvmAccount(account: string): Promise<ConnectedAccount> {
+    this.evmAddress = normalizeEvmAddress(account);
+    this.evmChainId = normalizeChainId(
+      await requestProvider<string>(this.provider, { method: "eth_chainId" }, this.providerRequestOptions())
+    );
+    this.stellarMapping = await this.addressResolver.resolve(this.evmAddress, this.activeNetwork);
+    return this.requireAccount();
+  }
+
   private async signTypedDataOrFallback(
     evmAddress: Hex,
     typedData: unknown
   ): Promise<{ signature: Hex; method: "eth_signTypedData_v4" | "personal_sign" }> {
     try {
       return {
-        signature: await this.provider.request<Hex>({
-          method: "eth_signTypedData_v4",
-          params: [evmAddress, JSON.stringify(typedData)]
-        }),
+        signature: await requestProvider<Hex>(
+          this.provider,
+          {
+            method: "eth_signTypedData_v4",
+            params: [evmAddress, JSON.stringify(typedData)]
+          },
+          this.providerRequestOptions()
+        ),
         method: "eth_signTypedData_v4"
       };
     } catch (cause) {
-      const signature = await this.provider.request<Hex>({
-        method: "personal_sign",
-        params: [JSON.stringify(typedData), evmAddress]
-      });
+      if (!this.allowTypedDataFallback) throw cause;
+
+      const signature = await requestProvider<Hex>(
+        this.provider,
+        {
+          method: "personal_sign",
+          params: [JSON.stringify(typedData), evmAddress]
+        },
+        this.providerRequestOptions()
+      );
       return { signature, method: "personal_sign" };
     }
   }
-}
 
-function getInjectedMetaMaskProvider(): EthereumProvider {
-  const maybeWindow = globalThis as typeof globalThis & { ethereum?: EthereumProvider };
-  if (!maybeWindow.ethereum) {
-    throw new StellarMetaMaskConnectorError("MetaMask provider was not found", "NO_METAMASK");
+  private providerRequestOptions(): { timeoutMs?: number } {
+    return this.requestTimeoutMs ? { timeoutMs: this.requestTimeoutMs } : {};
   }
-
-  return maybeWindow.ethereum;
 }

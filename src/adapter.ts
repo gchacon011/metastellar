@@ -1,8 +1,10 @@
 import { StellarMetaMaskConnector } from "./connector.js";
 import { STELLAR_TESTNET } from "./networks.js";
+import { getInjectedMetaMaskProvider, isMetaMaskAvailable } from "./provider.js";
 import { StellarSnapClient } from "./snapClient.js";
 import type {
   ConnectedAccount,
+  EthereumProvider,
   MetaStellarAdapterMode,
   MetaStellarAdapterOptions,
   MetaStellarAdapterState,
@@ -26,23 +28,31 @@ export class MetaStellarAdapter {
   readonly icon = "metastellar";
   readonly mode: MetaStellarAdapterMode;
 
+  private readonly provider: EthereumProvider;
   private readonly connector: StellarMetaMaskConnector;
   private readonly snap: StellarSnapClient;
   private readonly listeners = new Map<AdapterEvent, Set<AdapterListener>>();
   private connecting = false;
+  private readonly onAccountsChanged = (payload: unknown): void => {
+    void this.handleProviderAccountsChanged(payload);
+  };
+  private readonly onChainChanged = (payload: unknown): void => {
+    void this.handleProviderChainChanged(payload);
+  };
 
   constructor(options: MetaStellarAdapterOptions) {
     this.mode = options.mode ?? "intent";
-    this.connector = new StellarMetaMaskConnector(options);
+    this.provider = options.provider ?? getInjectedMetaMaskProvider();
+    this.connector = new StellarMetaMaskConnector({ ...options, provider: this.provider });
     this.snap = new StellarSnapClient({
-      ...(options.provider ? { provider: options.provider } : {}),
-      ...options.snap
+      ...options.snap,
+      provider: this.provider
     });
+    this.bindProviderEvents();
   }
 
   get readyState(): MetaStellarReadyState {
-    const maybeWindow = globalThis as typeof globalThis & { ethereum?: unknown };
-    return maybeWindow.ethereum ? "installed" : "not_detected";
+    return this.provider || isMetaMaskAvailable() ? "installed" : "not_detected";
   }
 
   get connected(): boolean {
@@ -99,6 +109,12 @@ export class MetaStellarAdapter {
   async disconnect(): Promise<void> {
     await this.connector.disconnect();
     this.emit("disconnect");
+  }
+
+  destroy(): void {
+    this.provider.removeListener?.("accountsChanged", this.onAccountsChanged);
+    this.provider.removeListener?.("chainChanged", this.onChainChanged);
+    this.listeners.clear();
   }
 
   async switchNetwork(networkId: string, options?: { switchEvmChain?: boolean }): Promise<ConnectedAccount> {
@@ -164,6 +180,36 @@ export class MetaStellarAdapter {
   private emit(event: AdapterEvent, payload?: unknown): void {
     for (const listener of this.listeners.get(event) ?? []) {
       listener(payload);
+    }
+  }
+
+  private bindProviderEvents(): void {
+    this.provider.on?.("accountsChanged", this.onAccountsChanged);
+    this.provider.on?.("chainChanged", this.onChainChanged);
+  }
+
+  private async handleProviderAccountsChanged(payload: unknown): Promise<void> {
+    try {
+      const accounts = Array.isArray(payload) ? payload.filter((value): value is string => typeof value === "string") : [];
+      const account = await this.connector.handleAccountsChanged(accounts);
+      if (account) {
+        this.emit("accountChanged", account);
+        return;
+      }
+
+      this.emit("disconnect");
+    } catch (error) {
+      this.emit("error", error);
+    }
+  }
+
+  private async handleProviderChainChanged(payload: unknown): Promise<void> {
+    try {
+      if (typeof payload !== "string") return;
+      const account = await this.connector.handleChainChanged(payload);
+      if (account) this.emit("accountChanged", account);
+    } catch (error) {
+      this.emit("error", error);
     }
   }
 }

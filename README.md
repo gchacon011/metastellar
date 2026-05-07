@@ -328,6 +328,36 @@ const signedMessage = await adapter.signStr("Sign in to Soroban dApp");
 
 This keeps dApp code close to the wallet-adapter ergonomics developers expect from ecosystems like Solana, while preserving Stellar-specific capabilities such as network passphrases, Soroban invocation intents, Stellar XDR signing, and optional Snap execution.
 
+## Adapter Robustness
+
+MetaStellar includes production-oriented safeguards for dApps that need predictable wallet behavior:
+
+- Shared MetaMask provider detection through `getInjectedMetaMaskProvider` and `getOptionalInjectedProvider`
+- Normalized provider errors such as `USER_REJECTED`, `REQUEST_ALREADY_PENDING`, `UNKNOWN_EVM_CHAIN`, and `PROVIDER_TIMEOUT`
+- Optional request timeouts through `requestTimeoutMs`
+- Optional disabling of `personal_sign` fallback with `allowTypedDataFallback: false`
+- Live `accountsChanged` and `chainChanged` handling in `MetaStellarAdapter`
+- `destroy()` cleanup for adapter event listeners
+- Snap install introspection through `getInstalledSnaps()` and `isInstalled()`
+- Validation helpers for Stellar addresses, Soroban contract IDs, positive payment amounts, and base64 XDR
+
+```ts
+const adapter = new MetaStellarAdapter({
+  appName: "Soroban dApp",
+  mode: "intent",
+  requestTimeoutMs: 30_000,
+  allowTypedDataFallback: false
+});
+
+adapter.on("accountChanged", (account) => {
+  console.log("MetaMask account changed", account);
+});
+
+adapter.on("error", (error) => {
+  console.error("Wallet error", error);
+});
+```
+
 ## Address Mapping
 
 The default `DeterministicAddressResolver` creates an off-chain identity hash from:
